@@ -1,0 +1,41 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Playful dot-grid background */
+  background-color: #f0eeff;
+  background-image:
+    radial-gradient(circle, rgba(109, 40, 217, 0.22) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+p {
+  margin: 0;
+}

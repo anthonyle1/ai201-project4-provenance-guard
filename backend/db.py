@@ -12,15 +12,22 @@ def init_db():
                 timestamp  TEXT,
                 attribution TEXT,
                 confidence REAL,
-                status TEXT
+                status TEXT,
+                text TEXT
             )
         """)
+        # Migrate existing databases that predate the text column
+        try:
+            conn.execute("ALTER TABLE audit_log ADD COLUMN text TEXT")
+        except sqlite3.OperationalError:
+            pass
 
 def log_event(entry):
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "INSERT INTO audit_log VALUES (:content_id, :creator_id, :timestamp, "
-            ":attribution, :confidence, :status)",
+            "INSERT INTO audit_log "
+            "(content_id, creator_id, timestamp, attribution, confidence, status, text) "
+            "VALUES (:content_id, :creator_id, :timestamp, :attribution, :confidence, :status, :text)",
             {**entry, "timestamp": datetime.now(timezone.utc).isoformat()},
         )
 

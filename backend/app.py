@@ -1,11 +1,21 @@
 from flask import Flask, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import score
 import db
 
 app = Flask(__name__)
 db.init_db()
 
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
 @app.route('/submit', methods=['POST'])
+@limiter.limit("10 per minute;100 per day")
 def send_data():
     data = request.get_json()
     text = data.get("text", "")
@@ -13,9 +23,9 @@ def send_data():
     burstiness_result = score.score_burstiness(text)
     total = round(perplexity_result["score"] * 0.5 + burstiness_result["score"] * 0.5, 2)
 
-    if total <= 0.35:
+    if total < 0.36:
         attribution = "likely human"
-    elif total <= 0.70:
+    elif total < 0.71:
         attribution = "uncertain"
     else:
         attribution = "likely AI"
@@ -25,6 +35,7 @@ def send_data():
         "attribution": attribution,
         "confidence":  total,
         "status":      "analyzed",
+        "text":        text,
     })
 
     return jsonify({"score": total, "attribution": attribution, "status": "received"}), 200
