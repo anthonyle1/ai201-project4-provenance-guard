@@ -51,8 +51,11 @@ function AnalyzeForm({ onResult }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, content_id: contentId, creator_id: creatorId }),
       })
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`)
-      const data = await res.json()
+      const raw = await res.text()
+      let data = {}
+      try { data = raw ? JSON.parse(raw) : {} } catch (_) {}
+      if (res.status === 409) throw new Error(`Content ID "${contentId}" already exists in the database.`)
+      if (!res.ok) throw new Error(data.error || `Server responded with ${res.status}`)
       onResult({ ...data, text })
     } catch (err) {
       setError(err.message)
@@ -133,11 +136,41 @@ function ResultCard({ result }) {
 
 const TRUNCATE_LEN = 240
 
-function HistoryEntry({ entry }) {
+function HistoryEntry({ entry, onAppeal }) {
   const [expanded, setExpanded] = useState(false)
+  const [appealing, setAppealing] = useState(false)
+  const [reasoning, setReasoning] = useState('')
+  const [appealLoading, setAppealLoading] = useState(false)
+  const [appealError, setAppealError] = useState(null)
+
   const text = entry.text ?? ''
   const isLong = text.length > TRUNCATE_LEN
   const displayed = expanded || !isLong ? text : text.slice(0, TRUNCATE_LEN)
+  const isUnderReview = entry.status === 'under_review'
+
+  async function handleAppeal(e) {
+    e.preventDefault()
+    setAppealError(null)
+    setAppealLoading(true)
+    try {
+      const res = await fetch('/appeal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content_id: entry.content_id, creator_reasoning: reasoning }),
+      })
+      const raw = await res.text()
+      let data = {}
+      try { data = raw ? JSON.parse(raw) : {} } catch (_) {}
+      if (!res.ok) throw new Error(data.error || `Server responded with ${res.status}`)
+      setAppealing(false)
+      setReasoning('')
+      onAppeal()
+    } catch (err) {
+      setAppealError(err.message)
+    } finally {
+      setAppealLoading(false)
+    }
+  }
 
   return (
     <div className="history-entry">
@@ -151,6 +184,13 @@ function HistoryEntry({ entry }) {
         <span className="history-entry__ts">
           {new Date(entry.timestamp).toLocaleString()}
         </span>
+        {isUnderReview ? (
+          <span className="appeal-status-chip">⏳ Under review</span>
+        ) : (
+          <button className="appeal-btn" onClick={() => setAppealing(v => !v)}>
+            {appealing ? 'Cancel' : 'Appeal'}
+          </button>
+        )}
       </div>
 
       <div className="history-entry__ids">
@@ -176,10 +216,7 @@ function HistoryEntry({ entry }) {
         <div className="history-entry__text">
           <p>{displayed}{!expanded && isLong ? '…' : ''}</p>
           {isLong && (
-            <button
-              className="expand-btn"
-              onClick={() => setExpanded(v => !v)}
-            >
+            <button className="expand-btn" onClick={() => setExpanded(v => !v)}>
               {expanded ? 'Show less ↑' : 'Show more ↓'}
             </button>
           )}
@@ -187,11 +224,105 @@ function HistoryEntry({ entry }) {
       ) : (
         <p className="history-entry__no-text">No text stored</p>
       )}
+
+      {appealing && (
+        <form className="appeal-form" onSubmit={handleAppeal}>
+          <label className="appeal-form__label" htmlFor={`reasoning-${entry.content_id}`}>
+            Explain why you're appealing this decision
+          </label>
+          <textarea
+            id={`reasoning-${entry.content_id}`}
+            className="appeal-form__textarea"
+            value={reasoning}
+            onChange={e => setReasoning(e.target.value)}
+            placeholder="Describe why you believe this classification is incorrect…"
+            rows={3}
+            required
+          />
+          {appealError && <p className="appeal-form__error">{appealError}</p>}
+          <div className="appeal-form__actions">
+            <button type="submit" className="appeal-submit-btn" disabled={appealLoading}>
+              {appealLoading ? <><span className="spinner" /> Submitting…</> : 'Submit Appeal'}
+            </button>
+            <button
+              type="button"
+              className="appeal-cancel-btn"
+              onClick={() => { setAppealing(false); setAppealError(null); setReasoning('') }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   )
 }
 
-function HistoryList({ entries, loading }) {
+function AppealsModal({ onClose }) {
+  const [appeals, setAppeals] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/appeals')
+      .then(r => r.json())
+      .then(data => { setAppeals(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal__header">
+          <h2 className="modal__title">Appeals</h2>
+          <button className="modal__close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {loading ? (
+          <p className="empty-state">Loading…</p>
+        ) : !appeals.length ? (
+          <p className="empty-state">No appeals have been filed yet.</p>
+        ) : (
+          <div className="appeals-list">
+            {appeals.map((a, i) => (
+              <div key={i} className="appeal-item">
+                <div className="appeal-item__header">
+                  <span className={`badge ${BADGE_CLASS[a.attribution] ?? ''}`}>{a.attribution}</span>
+                  <span className="appeal-item__ts">{new Date(a.timestamp).toLocaleString()}</span>
+                </div>
+                <div className="appeal-item__ids">
+                  <span className="id-chip">
+                    <span className="id-chip__label">content</span>
+                    <code>{a.content_id}</code>
+                  </span>
+                  <span className="id-chip">
+                    <span className="id-chip__label">creator</span>
+                    <code>{a.creator_id}</code>
+                  </span>
+                  <span className="id-chip">
+                    <span className="id-chip__label">confidence</span>
+                    <code>{Math.round(a.confidence * 100)}%</code>
+                  </span>
+                </div>
+                {a.text && (
+                  <div className="appeal-item__text">
+                    <span className="appeal-item__text-label">Submitted text</span>
+                    <p>{a.text}</p>
+                  </div>
+                )}
+                <div className="appeal-item__reasoning">
+                  <span className="appeal-item__reasoning-label">Creator reasoning</span>
+                  <p>{a.creator_reasoning}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function HistoryList({ entries, loading, onAppeal }) {
   if (loading && !entries.length) return <p className="empty-state">Loading…</p>
   if (!entries.length) return (
     <p className="empty-state">No entries yet — analyze some text to get started!</p>
@@ -199,7 +330,7 @@ function HistoryList({ entries, loading }) {
   return (
     <div className="history-list">
       {entries.map((entry, i) => (
-        <HistoryEntry key={i} entry={entry} />
+        <HistoryEntry key={i} entry={entry} onAppeal={onAppeal} />
       ))}
     </div>
   )
@@ -209,6 +340,7 @@ export default function App() {
   const [result, setResult] = useState(null)
   const [history, setHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [showAppeals, setShowAppeals] = useState(false)
 
   async function fetchHistory() {
     setHistoryLoading(true)
@@ -233,12 +365,16 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
+        <button className="appeals-nav-btn" onClick={() => setShowAppeals(true)}>
+          Appeals
+        </button>
         <span className="app-header__icon" aria-hidden="true">🔍</span>
         <h1 className="app-header__title">Provenance Guard</h1>
         <p className="app-header__tagline">
           Drop in any text and find out if it was written by a human or generated by AI.
         </p>
       </header>
+      {showAppeals && <AppealsModal onClose={() => setShowAppeals(false)} />}
 
       <main className="app-main">
         <section className="card">
@@ -258,7 +394,7 @@ export default function App() {
               {historyLoading ? 'Loading…' : '↻ Refresh'}
             </button>
           </div>
-          <HistoryList entries={history} loading={historyLoading} />
+          <HistoryList entries={history} loading={historyLoading} onAppeal={fetchHistory} />
         </section>
       </main>
 
