@@ -9,6 +9,7 @@ export default defineConfig({
       '/log': 'http://localhost:5000',
       '/appeal': 'http://localhost:5000',
       '/appeals': 'http://localhost:5000',
+      '/analytics': 'http://localhost:5000',
     },
   },
 })

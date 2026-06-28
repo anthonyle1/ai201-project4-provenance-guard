@@ -16,7 +16,7 @@ limiter = Limiter(
 )
 
 @app.route('/submit', methods=['POST'])
-@limiter.limit("10 per minute;100 per day")
+@limiter.limit("1 per 5 seconds;10 per minute;100 per day")
 def send_data():
     data = request.get_json()
     text = data.get("text", "")
@@ -73,6 +73,10 @@ def handle_appeal():
 def get_appeals():
     entries = db.read_appeals()
     return jsonify(entries), 200
+
+@app.route('/analytics', methods=['GET'])
+def get_analytics():
+    return jsonify(db.get_analytics()), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

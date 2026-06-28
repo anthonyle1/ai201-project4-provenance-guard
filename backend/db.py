@@ -69,3 +69,45 @@ def read_log(limit=20):
             "SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT ?", (limit,)
         ).fetchall()
     return [dict(row) for row in rows]
+
+def get_analytics():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        total = conn.execute("SELECT COUNT(*) as n FROM audit_log").fetchone()['n']
+
+        dist_rows = conn.execute(
+            "SELECT attribution, COUNT(*) as count FROM audit_log GROUP BY attribution"
+        ).fetchall()
+        distribution = {
+            r['attribution']: {
+                'count': r['count'],
+                'pct': round(r['count'] / total * 100) if total else 0,
+            }
+            for r in dist_rows
+        }
+
+        appeal_rows = conn.execute(
+            "SELECT attribution, COUNT(*) as total, "
+            "SUM(CASE WHEN creator_reasoning IS NOT NULL THEN 1 ELSE 0 END) as appealed "
+            "FROM audit_log GROUP BY attribution"
+        ).fetchall()
+        appeal_rate = {
+            r['attribution']: {
+                'total': r['total'],
+                'appealed': r['appealed'],
+                'rate': round(r['appealed'] / r['total'] * 100, 1) if r['total'] else 0,
+            }
+            for r in appeal_rows
+        }
+
+        top_users = {}
+        for label in ['likely human', 'uncertain', 'likely AI']:
+            rows = conn.execute(
+                "SELECT creator_id, COUNT(*) as count FROM audit_log "
+                "WHERE attribution = ? GROUP BY creator_id ORDER BY count DESC LIMIT 5",
+                (label,)
+            ).fetchall()
+            top_users[label] = [{'creator_id': r['creator_id'], 'count': r['count']} for r in rows]
+
+    return {'total': total, 'distribution': distribution, 'appeal_rate': appeal_rate, 'top_users': top_users}

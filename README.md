@@ -88,9 +88,11 @@ This formula is used to give equal weight between the two umbrella / detection s
 ## Rate limiting
 > the limits you chose and your reasoning for those specific values
 
-I chose to limit the `POST/submit` limit to 10/min and 100/day. 
+I chose to limit the `POST/submit` limit to 1 per 5 seconds, 10/min, and 100/day. 
 
-I chose these limits as I wanted to make sure users are intentional with what they are submitting to the prompt. I chose this limit to ensure there isn't too much spam submitted to the database, which at worst case scenarios can overwhelm the system during an attack. Since the code isn't hosted, I don't need to worry about users concurrently using the same server also. 
+I chose these limits as I wanted to make sure users are intentional with what they are submitting to the prompt. I chose this limit to ensure there isn't too much spam submitted to the database, which at worst case scenarios can overwhelm the system during an attack. Since the code isn't hosted, I don't need to worry about users concurrently using the same server also. Using 1 per 5 seconds will help limit accidental duplicate entries, as removing entries from the database isn't possible in the current iteration of the app.
+
+![alt text](image-6.png)
 
 ## Known limitations
 > at least one specific type of content your system would likely misclassify and why

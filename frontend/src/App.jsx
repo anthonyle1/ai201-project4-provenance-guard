@@ -296,6 +296,116 @@ function HistoryEntry({ entry, onAppeal }) {
   )
 }
 
+const LABELS = ['likely human', 'uncertain', 'likely AI']
+const LABEL_COLOR = { 'likely human': '#22c55e', 'uncertain': '#f59e0b', 'likely AI': '#ef4444' }
+
+function AnalyticsModal({ onClose }) {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/analytics')
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal analytics-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal__header">
+          <h2 className="modal__title">Analytics</h2>
+          <button className="modal__close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {loading ? (
+          <p className="empty-state">Loading…</p>
+        ) : !data ? (
+          <p className="empty-state">Failed to load analytics.</p>
+        ) : (
+          <div className="analytics-body">
+
+            <section className="analytics-section">
+              <h3 className="analytics-section__title">Verdict Distribution</h3>
+              <p className="analytics-section__sub">{data.total} total submission{data.total !== 1 ? 's' : ''}</p>
+              <div className="verdict-bars">
+                {LABELS.map(label => {
+                  const info = data.distribution[label] || { count: 0, pct: 0 }
+                  return (
+                    <div key={label} className="verdict-bar-row">
+                      <span className={`badge ${BADGE_CLASS[label]} verdict-bar-badge`}>{label}</span>
+                      <div className="verdict-bar__track">
+                        <div
+                          className="verdict-bar__fill"
+                          style={{ width: `${info.pct}%`, background: LABEL_COLOR[label] }}
+                        />
+                      </div>
+                      <span className="verdict-bar__stat">
+                        {info.count} <span className="verdict-bar__pct">({info.pct}%)</span>
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            <section className="analytics-section">
+              <h3 className="analytics-section__title">Appeal Rate by Label</h3>
+              <div className="appeal-rate-grid">
+                {LABELS.map(label => {
+                  const info = data.appeal_rate[label] || { total: 0, appealed: 0, rate: 0 }
+                  return (
+                    <div key={label} className="appeal-rate-card">
+                      <span className={`badge ${BADGE_CLASS[label]}`}>{label}</span>
+                      <div className="appeal-rate-card__num">{info.appealed} / {info.total}</div>
+                      <div className="appeal-rate-card__label">appealed</div>
+                      <div className="appeal-rate-card__rate" style={{ color: LABEL_COLOR[label] }}>
+                        {info.rate}% rate
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            <section className="analytics-section">
+              <h3 className="analytics-section__title">Top Submitters by Label</h3>
+              <div className="top-users-grid">
+                {LABELS.map(label => {
+                  const users = data.top_users[label] || []
+                  return (
+                    <div key={label} className="top-users-col">
+                      <div className="top-users-col__header">
+                        <span className={`badge ${BADGE_CLASS[label]}`}>{label}</span>
+                      </div>
+                      {users.length === 0 ? (
+                        <p className="top-users-empty">No submissions</p>
+                      ) : (
+                        <ol className="top-users-list">
+                          {users.map((u, i) => (
+                            <li key={u.creator_id} className="top-users-item">
+                              <span className="top-users-rank">#{i + 1}</span>
+                              <code className="top-users-id">{u.creator_id}</code>
+                              <span className="top-users-count" style={{ color: LABEL_COLOR[label] }}>
+                                {u.count}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AppealsModal({ onClose }) {
   const [appeals, setAppeals] = useState([])
   const [loading, setLoading] = useState(true)
@@ -379,6 +489,7 @@ export default function App() {
   const [history, setHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(true)
   const [showAppeals, setShowAppeals] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -404,6 +515,9 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
+        <button className="analytics-nav-btn" onClick={() => setShowAnalytics(true)}>
+          Analytics
+        </button>
         <button className="appeals-nav-btn" onClick={() => setShowAppeals(true)}>
           Appeals
         </button>
@@ -413,6 +527,7 @@ export default function App() {
           Drop in any text and find out if it was written by a human or generated by AI.
         </p>
       </header>
+      {showAnalytics && <AnalyticsModal onClose={() => setShowAnalytics(false)} />}
       {showAppeals && <AppealsModal onClose={() => setShowAppeals(false)} />}
 
       <main className="app-main">

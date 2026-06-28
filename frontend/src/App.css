@@ -867,6 +867,207 @@
   line-height: 1.6;
 }
 
+/* ── Analytics nav button ────────────────────────────────── */
+.analytics-nav-btn {
+  position: fixed;
+  top: 20px;
+  right: 130px;
+  z-index: 50;
+  padding: 8px 18px;
+  background: #ffffff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0369a1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.15);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.analytics-nav-btn:hover {
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.22);
+}
+
+/* ── Analytics modal ─────────────────────────────────────── */
+.analytics-modal {
+  max-width: 760px;
+}
+
+.analytics-body {
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.analytics-section__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analytics-section__sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 14px;
+}
+
+.verdict-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verdict-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.verdict-bar-badge {
+  flex: 0 0 100px;
+  text-align: center;
+}
+
+.verdict-bar__track {
+  flex: 1;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.verdict-bar__fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.verdict-bar__stat {
+  flex: 0 0 72px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.verdict-bar__pct {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.appeal-rate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.appeal-rate-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.appeal-rate-card__num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.appeal-rate-card__label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.appeal-rate-card__rate {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.top-users-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.top-users-col {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-users-col__header {
+  display: flex;
+  align-items: center;
+}
+
+.top-users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.top-users-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.top-users-rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  min-width: 20px;
+}
+
+.top-users-id {
+  flex: 1;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  color: #4338ca;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-users-count {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.top-users-empty {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 640px) {
   .result-card__top {
