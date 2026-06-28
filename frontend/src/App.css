@@ -195,6 +195,73 @@
   cursor: not-allowed;
 }
 
+/* ── Presets ─────────────────────────────────────────────── */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.presets__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.preset-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.preset-btn {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.preset-btn:hover {
+  background: #f0eeff;
+  border-color: #c4b5fd;
+  color: #6d28d9;
+}
+
+.preset-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 340px;
+  background: #ffffff;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.65;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.14);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.preset-wrap:hover .preset-tooltip {
+  display: block;
+}
+
 /* ── Spinner ─────────────────────────────────────────────── */
 .spinner {
   width: 14px;

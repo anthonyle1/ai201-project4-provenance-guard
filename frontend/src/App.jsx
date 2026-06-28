@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 
 const BADGE_CLASS = {
@@ -34,6 +34,25 @@ function ScoreBar({ score }) {
   )
 }
 
+const PRESETS = [
+  {
+    label: 'Likely AI',
+    text: `Artificial intelligence represents a transformative paradigm shift in modern society. It is important to note that while the benefits of AI are numerous, it is equally essential to consider the ethical implications. Furthermore, stakeholders across various sectors must collaborate to ensure responsible deployment.`,
+  },
+  {
+    label: 'Likely human',
+    text: `ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better. probably won't go back unless someone drags me there`,
+  },
+  {
+    label: 'Borderline — formal',
+    text: `The relationship between monetary policy and asset price inflation has been extensively studied in the literature. Central banks face a fundamental tension between their mandate for price stability and the unintended consequences of prolonged low interest rates on equity and real estate valuations.`,
+  },
+  {
+    label: 'Borderline — edited AI',
+    text: `I've been thinking a lot about remote work lately. There are genuine tradeoffs — flexibility and no commute on one side, isolation and blurred work-life boundaries on the other. Studies show productivity varies widely by individual and role type.`,
+  },
+]
+
 function AnalyzeForm({ onResult }) {
   const [text, setText] = useState('')
   const [contentId, setContentId] = useState('')
@@ -44,6 +63,8 @@ function AnalyzeForm({ onResult }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    if (!contentId.trim()) { setError('Content ID is required.'); return }
+    if (!creatorId.trim()) { setError('Creator ID is required.'); return }
     setLoading(true)
     try {
       const res = await fetch('/submit', {
@@ -98,6 +119,23 @@ function AnalyzeForm({ onResult }) {
           rows={7}
           required
         />
+      </div>
+      <div className="presets">
+        <div style={{display:"block"}}>
+        <h5 className="presets__label" style={{marginBottom:"1rem"}}>Try an example:</h5>
+        {PRESETS.map((p) => (
+          <div key={p.label} className="preset-wrap">
+            <button
+              type="button"
+              className="preset-btn"
+              onClick={() => setText(p.text)}
+            >
+              {p.text.slice(0, 52)}…
+            </button>
+            <div className="preset-tooltip">{p.text}</div>
+          </div>
+        ))}
+        </div>
       </div>
       {error && <p className="form-error">{error}</p>}
       <button type="submit" className="submit-btn" disabled={loading}>
@@ -339,11 +377,10 @@ function HistoryList({ entries, loading, onAppeal }) {
 export default function App() {
   const [result, setResult] = useState(null)
   const [history, setHistory] = useState([])
-  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(true)
   const [showAppeals, setShowAppeals] = useState(false)
 
-  async function fetchHistory() {
-    setHistoryLoading(true)
+  const fetchHistory = useCallback(async () => {
     try {
       const res = await fetch('/log?limit=100')
       const data = await res.json()
@@ -353,12 +390,14 @@ export default function App() {
     } finally {
       setHistoryLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { fetchHistory() }, [])
+  // eslint-disable-next-line
+  useEffect(() => { fetchHistory() }, [fetchHistory])
 
   function handleResult(data) {
     setResult(data)
+    setHistoryLoading(true)
     fetchHistory()
   }
 

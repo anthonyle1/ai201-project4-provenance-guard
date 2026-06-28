@@ -54,9 +54,6 @@ This formula is used to give equal weight between the two umbrella / detection s
 * Scores closer to 1 will lead to a higher likelihood that the text is AI generated.
 * Scores closer to 0 will signify text with a higher likelihood that the text is written by humans, the inverse of the likelihood the text is AI generated.
 
-The final output will also include a short summary to why the model thinks the text is AI generated or not. 
-
-
 ## Uncertainty representation
 > What does a confidence score of 0.6 mean to your system? How will you map raw signal outputs to a calibrated score? What threshold separates "likely AI" from "uncertain" from "likely human"?
 
@@ -76,8 +73,6 @@ A confidence score of 0.6 signifies that the system is uncertain that the text i
 | likely human | The text does not showcase strong evidence for the text to be AI generated. The text recieved a score for being <score> % likely to be AI-generated. |
 | uncertain | The system is unsure if the provided text is AI generated or not. The text recieved a score for being <score> % likely to be AI-generated. |
 | likely AI | Based on the patterns commonly shown with AI-generated content, the text does showcase strong evidence for the text to be AI generated. The text recieved a score for being <score> % likely to be AI generated. | 
-
-Additionally, the reason to why the system chose the score will be summarized and showcased to the user alongside the resulting text and confidence score. 
 
 ## Appeals workflow
 > Who can submit an appeal? What information do they provide? What does the system do when an appeal is received — what status changes, what gets logged? What would a human reviewer see when they open the appeal queue?
