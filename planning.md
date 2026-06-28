@@ -125,8 +125,28 @@ Additionally, the reviewer will be able to change the confidence of the post to 
 ### M3 (submission endpoint + first signal)
 > Which spec sections you'll provide to the AI tool (hint: your detection signals section + the diagram), what you'll ask it to generate (Flask app skeleton + the first signal function), and how you'll verify the output (test with a few inputs directly before wiring into the endpoint).
 
+I will ask Claude on how to setup the endpoints between the user submitting information (frontend) and the Flask/SQLlite back-end. I will ask on how to setup the relevant REST API endpoints (`POST/submit` and `POST/appeal`)
+
+Additionally, I will ask Claude to help design the database schema and link the endpoints to the SQLlite datebase.
+
+I will ask Claude to help generate prompts to guide the choice of LLM hosted by Groq to calculate the confidence scores for the first detection signal. I will give Claude the detection signals section and the corresponding architecture diagram to generate the relevant prompts used to assist scoring. I will verify the output by testing each detection signal using a variety of text, both human and AI generated.
+
+To test the endpoint connection, I will use a `curl` command such as the following:
+```
+curl -s -X POST http://localhost:5000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"text": "The sun dipped below the horizon, painting the sky in hues of amber and rose. I sat on the porch, coffee in hand, watching the neighborhood slowly go quiet.", "creator_id": "test-user-1"}' | python -m json.tool
+```
+
+to test if the submission endpoint and the first signal works. 
+
 ### M4 (second signal + confidence scoring)
 > Which spec sections you'll provide (detection signals + uncertainty representation + diagram), what you'll ask for (second signal function + scoring logic), and what you'll check (do scores vary meaningfully between clearly AI and clearly human text?).
 
+I will ask Claude to help generate prompts to guide the choice of LLM hosted by Groq to calculate the confidence scores for the second detection signal. I will give Claude the detection signals section and the corresponding architecture diagram to generate the relevant prompts used to assist scoring. I will verify the output by testing each detection signal using a variety of text, both human and AI generated. I will ensure that the second signal and final calculation are visible through the `POST/submit` endpoint. Additionally, I will read the reasoning and keep track of scores across the various texts tested to verify if the scores are distinct and varies meaningfully between confidence levels. 
+
+
 ### M5 (production layer)
-> Which spec sections you'll provide (detection signals + uncertainty representation + diagram), what you'll ask for (second signal function + scoring logic), and what you'll check (do scores vary meaningfully between clearly AI and clearly human text?).
+> Which spec sections you'll provide (label variants + appeals workflow + diagram), what you'll ask for (label generation logic + the /appeal endpoint), and how you'll verify (test all three label variants are reachable and that an appeal updates status correctly).
+
+I will provide Claude with the label variants, the appeals workflow and relevant diagram and ask Claude to help write the generation logic and the appeal endpoint. I will verify by testing if all 3 label variants are reachable and if the appeal status updates correctly by simulating human review. 
