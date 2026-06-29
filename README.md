@@ -113,3 +113,7 @@ One diversion I made from the spec is running the cURL commands. I had a lot of 
 1. I used Claude to help build the frontend of my system. I gave it a list of user inputs to build a form, alongside the database schema and API endpoints to build the form. I further prompted to change the database view from a table to individual list items to better view the text and make it more friendly to make appeals and not overwhelm the user with a ton of information at once.
 
 2. I used Claude to help write my prompts used to help score the text. I gave the AI my planning.md sections for each detection signals. I tested with text from the specification, and saw that the code was scoring the code incorrectly. I changed the prompt to better define the scoring guideline to better fit my planning.md and score distribution. Additionally, I changed the way the output was defined since there was an issue with the generated code where the score would always return 0, I was more explicit to return a number relevant to the score between 0 and 1.
+
+<img width="2560" height="1228" alt="image" src="https://github.com/user-attachments/assets/29283cf2-614a-456b-badc-c6fce98b1f0d" />
+
+<img width="2560" height="1256" alt="image" src="https://github.com/user-attachments/assets/5b8c39e2-358d-4ee5-812f-0f8e9c03708c" />
